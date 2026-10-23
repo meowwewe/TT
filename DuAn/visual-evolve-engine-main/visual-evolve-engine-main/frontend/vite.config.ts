@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        "/api": env.VITE_API_PROXY_TARGET || "http://127.0.0.1:3001",
+        "/api": env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8787",
       },
     },
     build: {
