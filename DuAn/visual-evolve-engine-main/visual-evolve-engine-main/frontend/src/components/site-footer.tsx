@@ -1,4 +1,4 @@
-import logoImg from "../../logo/logo.png";
+import logoImg from "../assets/logo/logo.png";
 
 export function SiteFooter() {
   return (

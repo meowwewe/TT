@@ -5,15 +5,15 @@ The project is split into two independently installable applications:
 | Area | Location | Responsibilities |
 | --- | --- | --- |
 | Frontend | [`frontend/`](./frontend/) | React storefront, login/checkout/admin UI, route tree, styles, logos, banners, posters, category and product images, Vite/Cloudflare Pages build |
-| Backend | [`backend/`](./backend/) | Express REST API, admin/public endpoints, CORS, environment configuration, MySQL access and schema initialization |
+| Backend | [`backend/`](./backend/) | Cloudflare Worker REST API, admin/public endpoints, CORS and Cloudflare D1 persistence |
 
 The UI source in `src/routes/`, `src/components/`, `src/hooks/` and browser-only
 `src/lib/` now lives in `frontend/src/`. Product/banner/poster assets and the
 Vite, TypeScript, ESLint and frontend package configuration moved into
 `frontend/` with it. The prior `src/server/admin-api.ts` and
-`src/server/admin-store.ts` moved to `backend/src/`; the Express entrypoint is
+`src/server/admin-store.ts` moved to `backend/src/`; the Worker entrypoint is
 `backend/src/index.ts`. The JSON fixture was retained at `backend/data/db.json`;
-live API reads and writes now use MySQL instead.
+the Worker reads and writes live data through its D1 binding.
 
 ## Local development
 
@@ -21,8 +21,10 @@ Run the backend and frontend in separate terminals:
 
 ```powershell
 cd backend
-Copy-Item .env.example .env
 npm install
+Copy-Item .dev.vars.example .dev.vars
+npm run db:apply:local
+npm run db:seed:local
 npm run dev
 ```
 
@@ -32,17 +34,17 @@ npm install
 npm run dev
 ```
 
-The frontend calls `/api` through the Vite proxy to `http://localhost:3001`.
-Set `VITE_API_PROXY_TARGET` if the backend runs elsewhere. The API connection
-defaults to the existing XAMPP database `duanbackup`; set `DB_HOST`, `DB_PORT`,
-`DB_NAME`, `DB_USER`, and `DB_PASSWORD` in `backend/.env` to override it.
+The frontend calls `/api` through the Vite proxy to the local Worker at
+`http://127.0.0.1:8787`. Set `VITE_API_PROXY_TARGET` if the backend runs
+elsewhere. Local development uses Wrangler's local D1 database, separate from
+the XAMPP MySQL database.
 
-Local admin defaults are `admin@namnguyen.local` / `Admin@123`; configure
-`ADMIN_EMAIL` and `ADMIN_PASSWORD` before deploying.
+Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `CORS_ORIGINS` in `backend/.dev.vars`
+for local development. Configure the production password as a Worker secret.
 
-The development `.env` is intentionally ignored by Git. Keep production
+The development `.dev.vars` file is intentionally ignored by Git. Keep production
 credentials in the deployment platform's secret-variable settings rather
-than committing a populated `.env` file.
+than committing a populated `.dev.vars` file.
 
 ## Cloudflare Pages frontend
 
@@ -56,12 +58,10 @@ between unrelated third-party domains.
 
 ## Backend deployment
 
-Deploy `backend/` as a Node.js service (Node 20+), install its dependencies and
-run `npm start`. Set `HOST=0.0.0.0` if the platform requires binding all
-interfaces, `PORT`, `CORS_ORIGINS` (the exact Pages origin),
-`ADMIN_EMAIL`, `ADMIN_PASSWORD`, and the `DB_*` MySQL connection variables.
-Create the target database and grant the application user table-creation
-permissions for the initial schema setup.
+Create the D1 database, replace the placeholder `database_id` in
+`backend/wrangler.jsonc`, configure the exact production `CORS_ORIGINS`, apply
+the remote migrations and deploy the Worker. Full commands and secret setup
+are documented in [`backend/README.md`](./backend/README.md).
 
 ## API responsibilities
 

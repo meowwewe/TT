@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, MonitorSmartphone, FileText, ShieldCheck, Palette, Briefcase, Wrench, Zap, Mail, RotateCcw, Headphones as HeadphonesIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import bannerHero from "../../banner/hero-banner.jpg";
-import posterWinTrangChu from "../../Anh_banner_poster/poster_win_trangchu.jpg";
-import posterVirusTrangChu from "../../Anh_banner_poster/poster_virus_trangchu.jpg";
+import bannerHero from "../assets/banner/hero-banner.jpg";
+import posterWinTrangChu from "../assets/Anh_banner_poster/poster_win_trangchu.jpg";
+import posterVirusTrangChu from "../assets/Anh_banner_poster/poster_virus_trangchu.jpg";
 import { Layout } from "@/components/layout";
 import { ProductCard } from "@/components/product-card";
 import { categories, products } from "@/lib/products";

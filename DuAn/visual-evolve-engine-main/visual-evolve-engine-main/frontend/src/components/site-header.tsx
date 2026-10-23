@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import logoImg from "../../logo/logo.png";
+import logoImg from "../assets/logo/logo.png";
 import { Search, ShoppingCart, User, Heart, Truck, Shield, Phone } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";

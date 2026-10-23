@@ -1,8 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronRight, SlidersHorizontal } from "lucide-react";
-import posterWin from "../../Anh_banner_poster/poster_win.png";
-import posterOffice from "../../Anh_banner_poster/poster_office.jpg";
-import posterVirus from "../../Anh_banner_poster/poster_virus.png";
+import posterWin from "../assets/Anh_banner_poster/poster_win.png";
+import posterOffice from "../assets/Anh_banner_poster/poster_office.jpg";
+import posterVirus from "../assets/Anh_banner_poster/poster_virus.png";
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout";
 import { ProductCard } from "@/components/product-card";
