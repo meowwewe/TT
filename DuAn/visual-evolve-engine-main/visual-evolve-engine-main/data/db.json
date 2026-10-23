@@ -1,0 +1,754 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "slug": "windows-11-home",
+      "name": "Windows 11 Home – Key bản quyền vĩnh viễn",
+      "brand": "Microsoft",
+      "category": "windows",
+      "price": 1990000,
+      "compareAt": 3290000,
+      "rating": 4.8,
+      "reviews": 1245,
+      "image": "/src/assets/sw-windows11.jpg",
+      "badge": "Bán chạy",
+      "stock": 120,
+      "description": "Key kích hoạt Windows 11 Home chính hãng Microsoft, bản quyền vĩnh viễn, sử dụng cho 1 thiết bị. Nhận key sau 5 phút qua email, hỗ trợ cài đặt từ xa miễn phí.",
+      "platforms": [
+        "Windows"
+      ],
+      "specs": [
+        {
+          "label": "Loại license",
+          "value": "Retail – vĩnh viễn"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "1 PC"
+        },
+        {
+          "label": "Ngôn ngữ",
+          "value": "Đa ngôn ngữ (có Tiếng Việt)"
+        },
+        {
+          "label": "Nền tảng",
+          "value": "Windows 11"
+        },
+        {
+          "label": "Bảo hành",
+          "value": "Trọn đời sử dụng"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "slug": "windows-11-pro",
+      "name": "Windows 11 Pro – Key bản quyền vĩnh viễn",
+      "brand": "Microsoft",
+      "category": "windows",
+      "price": 2690000,
+      "compareAt": 4590000,
+      "rating": 4.9,
+      "reviews": 872,
+      "image": "/src/assets/sw-windows11pro.jpg",
+      "badge": "Mới",
+      "stock": 80,
+      "description": "Phiên bản Windows 11 Pro dành cho doanh nghiệp và người dùng chuyên nghiệp. Hỗ trợ BitLocker, Hyper-V, Remote Desktop và Domain Join.",
+      "platforms": [
+        "Windows"
+      ],
+      "specs": [
+        {
+          "label": "Loại license",
+          "value": "Retail – vĩnh viễn"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "1 PC"
+        },
+        {
+          "label": "Tính năng",
+          "value": "BitLocker, Hyper-V, RDP"
+        },
+        {
+          "label": "Nền tảng",
+          "value": "Windows 11 Pro"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "slug": "office-2024-home-student",
+      "name": "Office 2024 Home & Student – Trọn đời",
+      "brand": "Microsoft",
+      "category": "office",
+      "price": 1490000,
+      "compareAt": 2990000,
+      "rating": 4.7,
+      "reviews": 2140,
+      "image": "/src/assets/sw-office.jpg",
+      "badge": "-50%",
+      "stock": 200,
+      "description": "Bộ Office 2024 gồm Word, Excel, PowerPoint và OneNote. Bản quyền vĩnh viễn cho 1 PC hoặc Mac, không cần trả phí hàng năm.",
+      "platforms": [
+        "Windows",
+        "macOS"
+      ],
+      "specs": [
+        {
+          "label": "Ứng dụng",
+          "value": "Word, Excel, PowerPoint, OneNote"
+        },
+        {
+          "label": "Loại license",
+          "value": "Vĩnh viễn"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "1 PC / Mac"
+        },
+        {
+          "label": "Ngôn ngữ",
+          "value": "Đa ngôn ngữ"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "slug": "microsoft-365-family",
+      "name": "Microsoft 365 Family – 12 tháng cho 6 người",
+      "brand": "Microsoft",
+      "category": "office",
+      "price": 1290000,
+      "compareAt": 1990000,
+      "rating": 4.8,
+      "reviews": 3421,
+      "image": "/src/assets/sw-m365.jpg",
+      "badge": "Ưu đãi",
+      "stock": 150,
+      "description": "Gói Microsoft 365 Family bản quyền 12 tháng, dùng cho 6 người trên tối đa 5 thiết bị/người. Kèm 1TB OneDrive/người và các ứng dụng luôn cập nhật.",
+      "platforms": [
+        "Windows",
+        "macOS"
+      ],
+      "specs": [
+        {
+          "label": "Thời hạn",
+          "value": "12 tháng"
+        },
+        {
+          "label": "Số người dùng",
+          "value": "6 người"
+        },
+        {
+          "label": "OneDrive",
+          "value": "1 TB / người"
+        },
+        {
+          "label": "Ứng dụng",
+          "value": "Word, Excel, PowerPoint, Outlook, Teams"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "slug": "kaspersky-standard",
+      "name": "Kaspersky Standard – 1 PC / 12 tháng",
+      "brand": "Kaspersky",
+      "category": "antivirus",
+      "price": 290000,
+      "compareAt": 490000,
+      "rating": 4.7,
+      "reviews": 5210,
+      "image": "/src/assets/sw-kaspersky.jpg",
+      "badge": "-40%",
+      "stock": 300,
+      "description": "Giải pháp diệt virus toàn diện của Kaspersky. Chống mã độc, ransomware, lừa đảo trực tuyến và bảo vệ giao dịch ngân hàng.",
+      "platforms": [
+        "Windows",
+        "macOS"
+      ],
+      "specs": [
+        {
+          "label": "Thời hạn",
+          "value": "12 tháng"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "1 PC"
+        },
+        {
+          "label": "Hệ điều hành",
+          "value": "Windows / macOS"
+        },
+        {
+          "label": "Tính năng",
+          "value": "Anti-ransomware, Safe Money"
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "slug": "eset-home-security-essential",
+      "name": "ESET HOME Security Essential – 1 thiết bị",
+      "brand": "ESET",
+      "category": "antivirus",
+      "price": 250000,
+      "compareAt": 450000,
+      "rating": 4.6,
+      "reviews": 1820,
+      "image": "/src/assets/sw-eset.jpg",
+      "stock": 250,
+      "description": "Phần mềm diệt virus ESET nhẹ, nhanh, ít tốn tài nguyên. Bảo vệ thời gian thực khỏi virus, mã độc và tấn công mạng.",
+      "platforms": [
+        "Windows",
+        "Android",
+        "macOS"
+      ],
+      "specs": [
+        {
+          "label": "Thời hạn",
+          "value": "12 tháng"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "1 thiết bị"
+        },
+        {
+          "label": "Nền tảng",
+          "value": "Windows / Android / macOS"
+        }
+      ]
+    },
+    {
+      "id": "p7",
+      "slug": "bitdefender-total-security",
+      "name": "Bitdefender Total Security – 5 thiết bị / 1 năm",
+      "brand": "Bitdefender",
+      "category": "antivirus",
+      "price": 590000,
+      "compareAt": 990000,
+      "rating": 4.9,
+      "reviews": 940,
+      "image": "/src/assets/sw-bitdefender.jpg",
+      "badge": "Đề cử",
+      "stock": 90,
+      "description": "Giải pháp bảo mật toàn diện đa nền tảng cho tối đa 5 thiết bị Windows, macOS, Android, iOS. Đạt nhiều giải AV-TEST.",
+      "platforms": [
+        "Windows",
+        "macOS",
+        "Android",
+        "iOS"
+      ],
+      "specs": [
+        {
+          "label": "Thời hạn",
+          "value": "12 tháng"
+        },
+        {
+          "label": "Số thiết bị",
+          "value": "5 thiết bị"
+        },
+        {
+          "label": "Nền tảng",
+          "value": "Windows / macOS / Android / iOS"
+        },
+        {
+          "label": "Tính năng",
+          "value": "VPN 200MB, Parental Control, Anti-theft"
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "c1",
+      "slug": "windows",
+      "name": "Windows"
+    },
+    {
+      "id": "c2",
+      "slug": "office",
+      "name": "Office"
+    },
+    {
+      "id": "c3",
+      "slug": "antivirus",
+      "name": "Diệt virus"
+    }
+  ],
+  "coupons": [
+    {
+      "id": "coupon1",
+      "code": "NAMNGUYEN10",
+      "discountPercent": 10,
+      "active": true
+    }
+  ],
+  "keys": [
+    {
+      "id": "key1",
+      "productId": "p1",
+      "key": "WIN11-AAAA-BBBB-CCCC",
+      "status": "available"
+    },
+    {
+      "id": "key2",
+      "productId": "p2",
+      "key": "WIN11-DDDD-EEEE-FFFF",
+      "status": "available"
+    }
+  ],
+  "banners": [
+    {
+      "id": "banner1",
+      "title": "Ưu đãi Windows 11",
+      "image": "https://via.placeholder.com/1200x520?text=Banner+Windows+11",
+      "type": "banner",
+      "active": true
+    },
+    {
+      "id": "banner2",
+      "title": "Khuyến mãi Office",
+      "image": "https://via.placeholder.com/1200x520?text=Banner+Office",
+      "type": "poster",
+      "active": true
+    }
+  ],
+  "orders": [
+    {
+      "id": "order_mrqjiqlg_8bxy5l",
+      "email": "hh",
+      "phone": "12",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 250000,
+      "status": "approved",
+      "createdAt": "2026-07-18T15:47:20.740Z",
+      "items": [
+        {
+          "productId": "p6",
+          "name": "ESET HOME Security Essential – 1 thiết bị",
+          "qty": 1,
+          "price": 250000
+        }
+      ]
+    },
+    {
+      "id": "order_mrqjeu64_chdmh8",
+      "email": "đăcxfd",
+      "phone": "123",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 3980000,
+      "status": "approved",
+      "createdAt": "2026-07-18T15:44:18.748Z",
+      "items": [
+        {
+          "productId": "p1",
+          "name": "Windows 11 Home – Key bản quyền vĩnh viễn",
+          "qty": 2,
+          "price": 1990000
+        }
+      ]
+    },
+    {
+      "id": "order_mrqj79lw_vf6ha7",
+      "email": "adddd",
+      "phone": "23",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 2690000,
+      "status": "approved",
+      "createdAt": "2026-07-18T15:38:25.508Z",
+      "items": [
+        {
+          "productId": "p2",
+          "name": "Windows 11 Pro – Key bản quyền vĩnh viễn",
+          "qty": 1,
+          "price": 2690000
+        }
+      ]
+    },
+    {
+      "id": "order_mrqfvngy_lwxdnd",
+      "email": "dtc235200121@ictu.edu.vn",
+      "phone": "ds",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 250000,
+      "status": "approved",
+      "createdAt": "2026-07-18T14:05:24.754Z",
+      "items": [
+        {
+          "productId": "p6",
+          "name": "ESET HOME Security Essential – 1 thiết bị",
+          "qty": 1,
+          "price": 250000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq7wutt_txvlkr",
+      "email": "ffd",
+      "phone": "3232",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 1990000,
+      "status": "approved",
+      "createdAt": "2026-07-18T10:22:24.017Z",
+      "items": [
+        {
+          "productId": "p1",
+          "name": "Windows 11 Home – Key bản quyền vĩnh viễn",
+          "qty": 1,
+          "price": 1990000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq6yrp3_rd06kd",
+      "email": "ạdgasgdds",
+      "phone": "02493",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 290000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:55:53.655Z",
+      "items": [
+        {
+          "productId": "p5",
+          "name": "Kaspersky Standard – 1 PC / 12 tháng",
+          "qty": 1,
+          "price": 290000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq6s4s2_w3rugu",
+      "email": "akdhd",
+      "phone": "1233",
+      "note": "",
+      "deliveryMethod": "email",
+      "total": 1490000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:50:44.018Z",
+      "items": [
+        {
+          "productId": "p3",
+          "name": "Office 2024 Home & Student – Trọn đời",
+          "qty": 1,
+          "price": 1490000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq6bc3s_fzjp07",
+      "email": "test1@example.com",
+      "phone": "0912345678",
+      "note": "order from test1 UI",
+      "deliveryMethod": "email",
+      "total": 1290000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:37:40.360Z",
+      "items": [
+        {
+          "productId": "p4",
+          "name": "Microsoft 365 Family",
+          "qty": 1,
+          "price": 1290000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq63ziu_es94sl",
+      "email": "test1@example.com",
+      "phone": "0912345678",
+      "note": "ordered via test1",
+      "deliveryMethod": "email",
+      "total": 1990000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:31:57.462Z",
+      "items": [
+        {
+          "productId": "p1",
+          "name": "Windows 11 Home",
+          "qty": 1,
+          "price": 1990000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq5xjaj_m54q7o",
+      "email": "test3@example.com",
+      "phone": "0900000000",
+      "note": "Test3",
+      "deliveryMethod": "email",
+      "total": 1490000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:26:56.491Z",
+      "items": [
+        {
+          "productId": "p3",
+          "name": "Office 2024",
+          "qty": 1,
+          "price": 1490000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq5w5g7_fqx3re",
+      "email": "test2@example.com",
+      "phone": "0987654321",
+      "note": "Test2",
+      "deliveryMethod": "email",
+      "total": 2690000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:25:51.895Z",
+      "items": [
+        {
+          "productId": "p2",
+          "name": "Windows 11 Pro",
+          "qty": 1,
+          "price": 2690000
+        }
+      ]
+    },
+    {
+      "id": "order_mrq505lo_srhs3q",
+      "email": "customer@example.com",
+      "phone": "0123456789",
+      "note": "Test order",
+      "deliveryMethod": "email",
+      "total": 1990000,
+      "status": "approved",
+      "createdAt": "2026-07-18T09:00:59.100Z",
+      "items": [
+        {
+          "productId": "p1",
+          "name": "Windows 11 Home – Key bản quyền vĩnh viễn",
+          "qty": 1,
+          "price": 1990000
+        }
+      ]
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notify_mrqjiqlg_8egbhr",
+      "message": "Đơn hàng mới: ESET HOME Security Essential – 1 thiết bị",
+      "type": "order",
+      "orderId": "order_mrqjiqlg_8bxy5l",
+      "createdAt": "2026-07-18T15:47:20.740Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqjfw9e_tk3nqz",
+      "message": "Đơn hàng order_mrqjeu64_chdmh8 đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrqjeu64_chdmh8",
+      "createdAt": "2026-07-18T15:45:08.114Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqjeu64_nlsbxh",
+      "message": "Đơn hàng mới order_mrqjeu64_chdmh8: Windows 11 Home – Key bản quyền vĩnh viễn",
+      "type": "order",
+      "orderId": "order_mrqjeu64_chdmh8",
+      "createdAt": "2026-07-18T15:44:18.748Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqj7gmz_egi4mq",
+      "message": "Đơn hàng order_mrqj79lw_vf6ha7 đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrqj79lw_vf6ha7",
+      "createdAt": "2026-07-18T15:38:34.619Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqj79lw_nsce1w",
+      "message": "Đơn hàng mới order_mrqj79lw_vf6ha7: Windows 11 Pro – Key bản quyền vĩnh viễn",
+      "type": "order",
+      "orderId": "order_mrqj79lw_vf6ha7",
+      "createdAt": "2026-07-18T15:38:25.508Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqj6193_jy7gq4",
+      "message": "Đơn hàng order_mrqfvngy_lwxdnd đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrqfvngy_lwxdnd",
+      "createdAt": "2026-07-18T15:37:28.023Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqfvngy_a5cxhg",
+      "message": "Đơn hàng mới order_mrqfvngy_lwxdnd từ dtc235200121@ictu.edu.vn",
+      "type": "order",
+      "orderId": "order_mrqfvngy_lwxdnd",
+      "createdAt": "2026-07-18T14:05:24.754Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqbhu5m_mzbiry",
+      "message": "Đơn hàng order_mrq7wutt_txvlkr đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq7wutt_txvlkr",
+      "createdAt": "2026-07-18T12:02:41.770Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq7wutt_5z5jzt",
+      "message": "Đơn hàng mới order_mrq7wutt_txvlkr từ ffd",
+      "type": "order",
+      "orderId": "order_mrq7wutt_txvlkr",
+      "createdAt": "2026-07-18T10:22:24.017Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6z5c6_5jtv5r",
+      "message": "Đơn hàng order_mrq6yrp3_rd06kd đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq6yrp3_rd06kd",
+      "createdAt": "2026-07-18T09:56:11.334Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6yrp3_oiaq88",
+      "message": "Đơn hàng mới order_mrq6yrp3_rd06kd từ ạdgasgdds",
+      "type": "order",
+      "orderId": "order_mrq6yrp3_rd06kd",
+      "createdAt": "2026-07-18T09:55:53.655Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6uuff_f45hqg",
+      "message": "Đơn hàng order_mrq6s4s2_w3rugu đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq6s4s2_w3rugu",
+      "createdAt": "2026-07-18T09:52:50.571Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6sxac_92nxkw",
+      "message": "Đơn hàng order_mrq505lo_srhs3q đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq505lo_srhs3q",
+      "createdAt": "2026-07-18T09:51:20.964Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6swi1_9604ao",
+      "message": "Đơn hàng order_mrq5w5g7_fqx3re đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq5w5g7_fqx3re",
+      "createdAt": "2026-07-18T09:51:19.945Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6svs4_64j75g",
+      "message": "Đơn hàng order_mrq5xjaj_m54q7o đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq5xjaj_m54q7o",
+      "createdAt": "2026-07-18T09:51:19.012Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6sunr_fbai6m",
+      "message": "Đơn hàng order_mrq63ziu_es94sl đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq63ziu_es94sl",
+      "createdAt": "2026-07-18T09:51:17.559Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6stl9_to5rqa",
+      "message": "Đơn hàng order_mrq6s4s2_w3rugu đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq6s4s2_w3rugu",
+      "createdAt": "2026-07-18T09:51:16.173Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6ssli_buqamg",
+      "message": "Đơn hàng order_mrq6bc3s_fzjp07 đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq6bc3s_fzjp07",
+      "createdAt": "2026-07-18T09:51:14.886Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6s4s2_1j35wg",
+      "message": "Đơn hàng mới order_mrq6s4s2_w3rugu từ akdhd",
+      "type": "order",
+      "orderId": "order_mrq6s4s2_w3rugu",
+      "createdAt": "2026-07-18T09:50:44.018Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq6bc3s_0qii28",
+      "message": "Đơn hàng mới order_mrq6bc3s_fzjp07 từ test1@example.com",
+      "type": "order",
+      "orderId": "order_mrq6bc3s_fzjp07",
+      "createdAt": "2026-07-18T09:37:40.360Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq65rso_441msa",
+      "message": "Đơn hàng order_mrq63ziu_es94sl đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq63ziu_es94sl",
+      "createdAt": "2026-07-18T09:33:20.760Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq65ghs_9tb4qi",
+      "message": "Đơn hàng order_mrq63ziu_es94sl đã được duyệt thanh toán",
+      "type": "payment",
+      "orderId": "order_mrq63ziu_es94sl",
+      "createdAt": "2026-07-18T09:33:06.112Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq63ziu_px6599",
+      "message": "Đơn hàng mới order_mrq63ziu_es94sl từ test1@example.com",
+      "type": "order",
+      "orderId": "order_mrq63ziu_es94sl",
+      "createdAt": "2026-07-18T09:31:57.462Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq5xjaj_wjtvlp",
+      "message": "Đơn hàng mới order_mrq5xjaj_m54q7o từ test3@example.com",
+      "type": "order",
+      "orderId": "order_mrq5xjaj_m54q7o",
+      "createdAt": "2026-07-18T09:26:56.491Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq5w5g7_xgvqxl",
+      "message": "Đơn hàng mới order_mrq5w5g7_fqx3re từ test2@example.com",
+      "type": "order",
+      "orderId": "order_mrq5w5g7_fqx3re",
+      "createdAt": "2026-07-18T09:25:51.895Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrq505lo_0cuamp",
+      "message": "Đơn hàng mới order_mrq505lo_srhs3q từ customer@example.com",
+      "type": "order",
+      "orderId": "order_mrq505lo_srhs3q",
+      "createdAt": "2026-07-18T09:00:59.100Z",
+      "read": true
+    },
+    {
+      "id": "notify_mrqjiyjk_1flswi",
+      "message": "Đơn hàng đã được duyệt: ESET HOME Security Essential – 1 thiết bị",
+      "type": "payment",
+      "orderId": "order_mrqjiqlg_8bxy5l",
+      "createdAt": "2026-07-18T15:47:31.040Z",
+      "read": true
+    }
+  ]
+}
