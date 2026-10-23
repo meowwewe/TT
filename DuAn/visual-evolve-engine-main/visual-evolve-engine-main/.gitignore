@@ -8,8 +8,15 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+**/node_modules/
 dist
+**/dist/
 dist-ssr
+**/.env
+**/.env.*
+!**/.env.example
+**/.wrangler/
+**/.tanstack/
 .output
 .vinxi
 .tanstack/**
