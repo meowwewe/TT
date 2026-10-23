@@ -1,10 +1,10 @@
-import win11 from "@/assets/Anh_sp_win/win11_home1.webp";
-import win11pro from "@/assets/Anh_sp_win/win11_pro1.jpg";
-import office from "@/assets/Anh_sp_office/office_home1.png";
-import m365 from "@/assets/Anh_sp_office/office_family1.webp";
-import kaspersky from "@/assets/Anh_sp_virus/virus_kas1.jpg";
-import eset from "@/assets/Anh_sp_virus/virus_es1.jpg";
-import bitdefender from "@/assets/Anh_sp_virus/virus_bit1.jpg";
+import win11 from "../assets/Anh_sp_win/win11_home1.webp";
+import win11pro from "../assets/Anh_sp_win/win11_pro1.jpg";
+import office from "../assets/Anh_sp_office/office_home1.png";
+import m365 from "../assets/Anh_sp_office/office_family1.webp";
+import kaspersky from "../assets/Anh_sp_virus/virus_kas1.jpg";
+import eset from "../assets/Anh_sp_virus/virus_es1.jpg";
+import bitdefender from "../assets/Anh_sp_virus/virus_bit1.jpg";
 import adobe from "@/assets/sw-adobe.jpg";
 
 export type Product = {
