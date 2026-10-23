@@ -1,0 +1,19 @@
+﻿{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "duanbackup-backend",
+  "main": "src/index.js",
+  "compatibility_date": "2024-09-23",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "duanbackup-db",
+      "database_id": "4b300047-4186-4d29-b0c1-14724a42fde4"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "STORAGE",
+      "bucket_name": "duanbackup-storage"
+    }
+  ]
+}
