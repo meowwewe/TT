@@ -1,0 +1,3 @@
+ADMIN_EMAIL=admin@namnguyen.local
+ADMIN_PASSWORD=replace-with-a-strong-local-password
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173

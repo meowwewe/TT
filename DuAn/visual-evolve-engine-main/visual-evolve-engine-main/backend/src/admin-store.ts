@@ -1,4 +1,4 @@
-import mysql, { type PoolConnection, type RowDataPacket } from "mysql2/promise";
+/// <reference types="@cloudflare/workers-types" />
 
 export type ProductData = {
   id: string;
@@ -65,7 +65,7 @@ type NotificationData = {
   read: boolean;
 };
 
-type StoreData = {
+export type StoreData = {
   products: ProductData[];
   categories: CategoryData[];
   coupons: CouponData[];
@@ -75,8 +75,7 @@ type StoreData = {
   notifications: NotificationData[];
 };
 
-type CategoryRow = RowDataPacket & CategoryData;
-type ProductRow = RowDataPacket & {
+type ProductRow = {
   id: string;
   slug: string;
   name: string;
@@ -90,23 +89,33 @@ type ProductRow = RowDataPacket & {
   badge: string | null;
   stock: number;
   description: string;
-  platforms: string[] | string;
-  specs: { label: string; value: string }[] | string;
+  platforms: string;
+  specs: string;
 };
-type CouponRow = RowDataPacket & {
+
+type CouponRow = {
   id: string;
   code: string;
   discount_percent: number;
   active: number;
 };
-type KeyRow = RowDataPacket & {
+
+type KeyRow = {
   id: string;
   product_id: string;
   license_key: string;
   status: KeyData["status"];
 };
-type BannerRow = RowDataPacket & BannerData;
-type OrderRow = RowDataPacket & {
+
+type BannerRow = {
+  id: string;
+  title: string;
+  image: string;
+  type: BannerData["type"];
+  active: number;
+};
+
+type OrderRow = {
   id: string;
   email: string;
   phone: string;
@@ -117,14 +126,16 @@ type OrderRow = RowDataPacket & {
   status: OrderData["status"];
   created_at: string;
 };
-type OrderItemRow = RowDataPacket & {
+
+type OrderItemRow = {
   order_id: string;
   product_id: string;
   name: string;
   quantity: number;
   unit_price: number;
 };
-type NotificationRow = RowDataPacket & {
+
+type NotificationRow = {
   id: string;
   message: string;
   type: NotificationData["type"];
@@ -133,89 +144,58 @@ type NotificationRow = RowDataPacket & {
   is_read: number;
 };
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "127.0.0.1",
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "duanbackup",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  timezone: "Z",
-  dateStrings: true,
-});
-
-const schemaStatements = [
-  "CREATE TABLE IF NOT EXISTS categories (id VARCHAR(32) PRIMARY KEY, slug VARCHAR(64) NOT NULL UNIQUE, name VARCHAR(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS products (id VARCHAR(32) PRIMARY KEY, slug VARCHAR(128) NOT NULL UNIQUE, name VARCHAR(255) NOT NULL, brand VARCHAR(128) NOT NULL, category_slug VARCHAR(64) NOT NULL, price BIGINT NOT NULL, compare_at BIGINT NULL, rating DECIMAL(3,1) NOT NULL, reviews INT UNSIGNED NOT NULL, image TEXT NOT NULL, badge VARCHAR(128) NULL, stock INT NOT NULL, description TEXT NOT NULL, platforms JSON NOT NULL, specs JSON NOT NULL, CONSTRAINT fk_products_category FOREIGN KEY (category_slug) REFERENCES categories(slug)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS coupons (id VARCHAR(32) PRIMARY KEY, code VARCHAR(64) NOT NULL UNIQUE, discount_percent DECIMAL(5,2) NOT NULL, active BOOLEAN NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS product_keys (id VARCHAR(32) PRIMARY KEY, product_id VARCHAR(32) NOT NULL, license_key VARCHAR(255) NOT NULL, status VARCHAR(32) NOT NULL, CONSTRAINT fk_keys_product FOREIGN KEY (product_id) REFERENCES products(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS banners (id VARCHAR(32) PRIMARY KEY, title VARCHAR(255) NOT NULL, image TEXT NOT NULL, type VARCHAR(32) NOT NULL, active BOOLEAN NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS orders (id VARCHAR(64) PRIMARY KEY, email VARCHAR(255) NOT NULL, phone VARCHAR(64) NOT NULL, note TEXT NOT NULL, delivery_method VARCHAR(64) NOT NULL, coupon_code VARCHAR(64) NULL, total BIGINT NOT NULL, status VARCHAR(32) NOT NULL, created_at DATETIME(3) NOT NULL, CONSTRAINT fk_orders_coupon FOREIGN KEY (coupon_code) REFERENCES coupons(code)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS order_items (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, order_id VARCHAR(64) NOT NULL, product_id VARCHAR(32) NOT NULL, name VARCHAR(255) NOT NULL, quantity INT UNSIGNED NOT NULL, unit_price BIGINT NOT NULL, CONSTRAINT fk_items_order FOREIGN KEY (order_id) REFERENCES orders(id), CONSTRAINT fk_items_product FOREIGN KEY (product_id) REFERENCES products(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-  "CREATE TABLE IF NOT EXISTS notifications (id VARCHAR(64) PRIMARY KEY, message TEXT NOT NULL, type VARCHAR(32) NOT NULL, order_id VARCHAR(64) NULL, created_at DATETIME(3) NOT NULL, is_read BOOLEAN NOT NULL, CONSTRAINT fk_notifications_order FOREIGN KEY (order_id) REFERENCES orders(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
-];
-
-let schemaInitialization: Promise<void> | undefined;
-
-export async function initializeStore() {
-  if (!schemaInitialization) {
-    schemaInitialization = (async () => {
-      const connection = await pool.getConnection();
-      try {
-        for (const statement of schemaStatements) {
-          await connection.query(statement);
-        }
-      } catch (error) {
-        schemaInitialization = undefined;
-        throw error;
-      } finally {
-        connection.release();
-      }
-    })();
-  }
-  await schemaInitialization;
-}
-
-function parseJson<T>(value: T | string): T {
-  return typeof value === "string" ? (JSON.parse(value) as T) : value;
+function parseJson<T>(value: string): T {
+  return JSON.parse(value) as T;
 }
 
 function toIsoString(value: string): string {
-  return value.includes("T")
-    ? new Date(value).toISOString()
-    : new Date(`${value.replace(" ", "T")}Z`).toISOString();
+  if (!value) return new Date().toISOString();
+  return new Date(value.includes("T") ? value : `${value.replace(" ", "T")}Z`).toISOString();
 }
 
-export async function getStore(): Promise<StoreData> {
-  await initializeStore();
-  const [categories] = await pool.query<CategoryRow[]>(
-    "SELECT id, slug, name FROM categories",
-  );
-  const [productRows] = await pool.query<ProductRow[]>(
-    "SELECT id, slug, name, brand, category_slug, price, compare_at, rating, reviews, image, badge, stock, description, platforms, specs FROM products",
-  );
-  const [couponRows] = await pool.query<CouponRow[]>(
-    "SELECT id, code, discount_percent, active FROM coupons",
-  );
-  const [keyRows] = await pool.query<KeyRow[]>(
-    "SELECT id, product_id, license_key, status FROM product_keys",
-  );
-  const [banners] = await pool.query<BannerRow[]>(
-    "SELECT id, title, image, type, active FROM banners",
-  );
-  const [orderRows] = await pool.query<OrderRow[]>(
-    "SELECT id, email, phone, note, delivery_method, coupon_code, total, status, created_at FROM orders",
-  );
-  const [itemRows] = await pool.query<OrderItemRow[]>(
-    "SELECT order_id, product_id, name, quantity, unit_price FROM order_items",
-  );
-  const [notificationRows] = await pool.query<NotificationRow[]>(
-    "SELECT id, message, type, order_id, created_at, is_read FROM notifications",
-  );
-  const itemsByOrder = new Map<string, OrderItem[]>();
+export function createId(prefix: string): string {
+  return `${prefix}_${crypto.randomUUID().replaceAll("-", "")}`;
+}
 
+export async function getStore(db: D1Database): Promise<StoreData> {
+  const [
+    categoriesRes,
+    productRowsRes,
+    couponRowsRes,
+    keyRowsRes,
+    bannersRes,
+    orderRowsRes,
+    itemRowsRes,
+    notificationRowsRes,
+  ] = await db.batch([
+    db.prepare("SELECT id, slug, name FROM categories"),
+    db.prepare(
+      "SELECT id, slug, name, brand, category_slug, price, compare_at, rating, reviews, image, badge, stock, description, platforms, specs FROM products",
+    ),
+    db.prepare("SELECT id, code, discount_percent, active FROM coupons"),
+    db.prepare("SELECT id, product_id, license_key, status FROM product_keys"),
+    db.prepare("SELECT id, title, image, type, active FROM banners"),
+    db.prepare(
+      "SELECT id, email, phone, note, delivery_method, coupon_code, total, status, created_at FROM orders",
+    ),
+    db.prepare(
+      "SELECT order_id, product_id, name, quantity, unit_price FROM order_items",
+    ),
+    db.prepare(
+      "SELECT id, message, type, order_id, created_at, is_read FROM notifications",
+    ),
+  ]);
+
+  const categories = (categoriesRes.results || []) as unknown as StoreData["categories"];
+  const productRows = (productRowsRes.results || []) as unknown as ProductRow[];
+  const couponRows = (couponRowsRes.results || []) as unknown as CouponRow[];
+  const keyRows = (keyRowsRes.results || []) as unknown as KeyRow[];
+  const banners = (bannersRes.results || []) as unknown as BannerRow[];
+  const orderRows = (orderRowsRes.results || []) as unknown as OrderRow[];
+  const itemRows = (itemRowsRes.results || []) as unknown as OrderItemRow[];
+  const notificationRows = (notificationRowsRes.results || []) as unknown as NotificationRow[];
+
+  const itemsByOrder = new Map<string, OrderItem[]>();
   for (const row of itemRows) {
     const items = itemsByOrder.get(row.order_id) ?? [];
     items.push({
@@ -243,8 +223,8 @@ export async function getStore(): Promise<StoreData> {
       ...(row.badge === null ? {} : { badge: row.badge }),
       stock: row.stock,
       description: row.description,
-      platforms: parseJson(row.platforms),
-      specs: parseJson(row.specs),
+      platforms: parseJson<string[]>(row.platforms),
+      specs: parseJson<ProductData["specs"]>(row.specs),
     })),
     coupons: couponRows.map((row) => ({
       id: row.id,
@@ -258,7 +238,13 @@ export async function getStore(): Promise<StoreData> {
       key: row.license_key,
       status: row.status,
     })),
-    banners: banners.map((row) => ({ ...row, active: Boolean(row.active) })),
+    banners: banners.map((row) => ({
+      id: row.id,
+      title: row.title,
+      image: row.image,
+      type: row.type,
+      active: Boolean(row.active),
+    })),
     orders: orderRows.map((row) => ({
       id: row.id,
       email: row.email,
@@ -282,124 +268,128 @@ export async function getStore(): Promise<StoreData> {
   };
 }
 
-async function replaceStore(connection: PoolConnection, data: StoreData) {
-  await connection.query("DELETE FROM notifications");
-  await connection.query("DELETE FROM order_items");
-  await connection.query("DELETE FROM orders");
-  await connection.query("DELETE FROM product_keys");
-  await connection.query("DELETE FROM products");
-  await connection.query("DELETE FROM categories");
-  await connection.query("DELETE FROM coupons");
-  await connection.query("DELETE FROM banners");
+export async function writeStore(db: D1Database, data: StoreData): Promise<void> {
+  const statements: D1PreparedStatement[] = [
+    db.prepare("DELETE FROM notifications"),
+    db.prepare("DELETE FROM order_items"),
+    db.prepare("DELETE FROM orders"),
+    db.prepare("DELETE FROM product_keys"),
+    db.prepare("DELETE FROM products"),
+    db.prepare("DELETE FROM categories"),
+    db.prepare("DELETE FROM coupons"),
+    db.prepare("DELETE FROM banners"),
+  ];
 
   for (const row of data.categories) {
-    await connection.execute(
-      "INSERT INTO categories (id, slug, name) VALUES (?, ?, ?)",
-      [row.id, row.slug, row.name],
+    statements.push(
+      db
+        .prepare("INSERT INTO categories (id, slug, name) VALUES (?, ?, ?)")
+        .bind(row.id, row.slug, row.name),
     );
   }
+
   for (const row of data.products) {
-    await connection.execute(
-      "INSERT INTO products (id, slug, name, brand, category_slug, price, compare_at, rating, reviews, image, badge, stock, description, platforms, specs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        row.id,
-        row.slug,
-        row.name,
-        row.brand,
-        row.category,
-        row.price,
-        row.compareAt ?? null,
-        row.rating,
-        row.reviews,
-        row.image,
-        row.badge ?? null,
-        row.stock,
-        row.description,
-        JSON.stringify(row.platforms),
-        JSON.stringify(row.specs),
-      ],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO products (id, slug, name, brand, category_slug, price, compare_at, rating, reviews, image, badge, stock, description, platforms, specs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(
+          row.id,
+          row.slug,
+          row.name,
+          row.brand,
+          row.category,
+          row.price,
+          row.compareAt ?? null,
+          row.rating,
+          row.reviews,
+          row.image,
+          row.badge ?? null,
+          row.stock,
+          row.description,
+          JSON.stringify(row.platforms),
+          JSON.stringify(row.specs),
+        ),
     );
   }
+
   for (const row of data.coupons) {
-    await connection.execute(
-      "INSERT INTO coupons (id, code, discount_percent, active) VALUES (?, ?, ?, ?)",
-      [row.id, row.code, row.discountPercent, Number(row.active)],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO coupons (id, code, discount_percent, active) VALUES (?, ?, ?, ?)",
+        )
+        .bind(row.id, row.code, row.discountPercent, Number(row.active)),
     );
   }
+
   for (const row of data.keys) {
-    await connection.execute(
-      "INSERT INTO product_keys (id, product_id, license_key, status) VALUES (?, ?, ?, ?)",
-      [row.id, row.productId, row.key, row.status],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO product_keys (id, product_id, license_key, status) VALUES (?, ?, ?, ?)",
+        )
+        .bind(row.id, row.productId, row.key, row.status),
     );
   }
+
   for (const row of data.banners) {
-    await connection.execute(
-      "INSERT INTO banners (id, title, image, type, active) VALUES (?, ?, ?, ?, ?)",
-      [row.id, row.title, row.image, row.type, Number(row.active)],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO banners (id, title, image, type, active) VALUES (?, ?, ?, ?, ?)",
+        )
+        .bind(row.id, row.title, row.image, row.type, Number(row.active)),
     );
   }
+
   for (const row of data.orders) {
-    await connection.execute(
-      "INSERT INTO orders (id, email, phone, note, delivery_method, coupon_code, total, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        row.id,
-        row.email,
-        row.phone,
-        row.note,
-        row.deliveryMethod,
-        row.couponCode ?? null,
-        row.total,
-        row.status,
-        new Date(row.createdAt),
-      ],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO orders (id, email, phone, note, delivery_method, coupon_code, total, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(
+          row.id,
+          row.email,
+          row.phone,
+          row.note,
+          row.deliveryMethod,
+          row.couponCode ?? null,
+          row.total,
+          row.status,
+          toIsoString(row.createdAt),
+        ),
     );
+
     for (const item of row.items) {
-      await connection.execute(
-        "INSERT INTO order_items (order_id, product_id, name, quantity, unit_price) VALUES (?, ?, ?, ?, ?)",
-        [row.id, item.productId, item.name, item.qty, item.price],
+      statements.push(
+        db
+          .prepare(
+            "INSERT INTO order_items (order_id, product_id, name, quantity, unit_price) VALUES (?, ?, ?, ?, ?)",
+          )
+          .bind(row.id, item.productId, item.name, item.qty, item.price),
       );
     }
   }
+
   for (const row of data.notifications) {
-    await connection.execute(
-      "INSERT INTO notifications (id, message, type, order_id, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?)",
-      [
-        row.id,
-        row.message,
-        row.type,
-        row.orderId ?? null,
-        new Date(row.createdAt),
-        Number(row.read),
-      ],
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO notifications (id, message, type, order_id, created_at, is_read) VALUES (?, ?, ?, ?, ?, ?)",
+        )
+        .bind(
+          row.id,
+          row.message,
+          row.type,
+          row.orderId ?? null,
+          toIsoString(row.createdAt),
+          Number(row.read),
+        ),
     );
   }
-}
 
-export async function writeStore(data: StoreData) {
-  await initializeStore();
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-    await replaceStore(connection, data);
-    await connection.commit();
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+  await db.batch(statements);
 }
-
-export function createId(prefix: string) {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export type {
-  CategoryData,
-  CouponData,
-  KeyData,
-  BannerData,
-  OrderData,
-  NotificationData,
-  StoreData,
-};

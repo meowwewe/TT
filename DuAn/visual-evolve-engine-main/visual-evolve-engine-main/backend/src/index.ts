@@ -1,109 +1,53 @@
-import "dotenv/config";
-
-import cors from "cors";
-import express, { type Request, type Response } from "express";
+/// <reference types="@cloudflare/workers-types" />
 import { handleAdminApi, handlePublicApi } from "./admin-api.js";
-import { initializeStore } from "./admin-store.js";
+import type { Env } from "./env.js";
 
-const app = express();
-const port = Number(process.env.PORT || 3001);
-const host =
-  process.env.HOST ||
-  (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
-if (process.env.NODE_ENV === "production" && !process.env.ADMIN_PASSWORD) {
-  throw new Error("ADMIN_PASSWORD must be configured in production");
-}
-const allowedOrigins = new Set(
-  (
-    process.env.CORS_ORIGINS ||
-    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080"
-  )
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
-);
-if (process.env.NODE_ENV === "production" && !process.env.CORS_ORIGINS) {
-  throw new Error("CORS_ORIGINS must be configured in production");
-}
-
-app.disable("x-powered-by");
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
-    credentials: true,
-  }),
-);
-app.use(express.json({ limit: "1mb" }));
-
-app.get("/health", (_request, response) => {
-  response.json({ status: "ok" });
-});
-
-app.use("/api", async (request: Request, response: Response, next) => {
-  try {
-    const url = `http://${request.headers.host || "localhost"}${request.originalUrl}`;
-    const body = ["GET", "HEAD"].includes(request.method)
-      ? undefined
-      : JSON.stringify(request.body ?? {});
-    const headers = new Headers();
-    for (const [name, value] of Object.entries(request.headers)) {
-      if (Array.isArray(value)) {
-        headers.set(name, value.join(", "));
-      } else if (value !== undefined) {
-        headers.set(name, value);
-      }
-    }
-    const apiRequest = new Request(url, {
-      method: request.method,
-      headers,
-      ...(body === undefined ? {} : { body }),
-    });
-    const apiResponse = request.path.startsWith("/admin/")
-      ? await handleAdminApi(apiRequest)
-      : await handlePublicApi(apiRequest);
-
-    response.status(apiResponse.status);
-    apiResponse.headers.forEach((value, name) =>
-      response.setHeader(name, value),
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const origin = request.headers.get("Origin");
+    const allowedOrigins = new Set(
+      (env.CORS_ORIGINS ?? "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
     );
+    const withCors = (response: Response): Response => {
+      const headers = new Headers(response.headers);
+      headers.append("Vary", "Origin");
+      if (origin && allowedOrigins.has(origin)) {
+        headers.set("Access-Control-Allow-Origin", origin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+        headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+        headers.set(
+          "Access-Control-Allow-Headers",
+          request.headers.get("Access-Control-Request-Headers") ?? "Content-Type",
+        );
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    };
 
-    if (!apiResponse.body) {
-      response.end();
-      return;
+    if (request.method === "OPTIONS") {
+      return withCors(new Response(null, { status: 204 }));
     }
 
-    const reader = apiResponse.body.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      response.write(Buffer.from(value));
+    if (url.pathname === "/health") {
+      return withCors(new Response(JSON.stringify({ status: "ok" }), {
+        headers: { "Content-Type": "application/json" },
+      }));
     }
-    response.end();
-  } catch (error) {
-    next(error);
-  }
-});
 
-app.use(
-  (
-    error: Error,
-    _request: Request,
-    response: Response,
-    _next: express.NextFunction,
-  ) => {
-    console.error(error);
-    response.status(500).json({ error: "Internal server error" });
+    if (url.pathname.startsWith("/api/")) {
+      if (url.pathname.startsWith("/api/admin/")) {
+        return withCors(await handleAdminApi(request, env));
+      }
+      return withCors(await handlePublicApi(request, env));
+    }
+
+    return withCors(new Response("Not Found", { status: 404 }));
   },
-);
-
-await initializeStore();
-
-app.listen(port, host, () => {
-  console.log(`Backend API listening on http://localhost:${port}`);
-});
+};

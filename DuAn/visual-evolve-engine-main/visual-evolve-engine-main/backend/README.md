@@ -1,18 +1,56 @@
-# Backend
+# Backend API
 
-Express REST API and MySQL persistence service.
+The API runs as a Cloudflare Worker and uses the `DB` D1 binding. The browser
+frontend calls this Worker over HTTP; D1 is never accessed from frontend code.
 
 ## Local development
 
-1. Copy `.env.example` to `.env`.
-2. Set the MySQL connection and admin credentials for your environment.
-3. Ensure the configured MySQL database exists and the application user can
-   create tables on first startup.
-4. Run `npm install` and `npm run dev`.
+1. Install dependencies with `npm install`.
+2. Copy `.dev.vars.example` to `.dev.vars` and set a strong local admin password.
+3. Apply the schema, import the fixture data, and start the Worker:
 
-The API listens on `PORT` and exposes `/health` and `/api/*` endpoints.
-Restrict `CORS_ORIGINS` to the exact frontend origins you deploy. Production
-deployments must use HTTPS and override the example admin password.
+   ```powershell
+   npm run db:apply:local
+   npm run db:seed:local
+   npm run dev
+   ```
 
-The API preserves existing routes and response shapes; product and category
-catalogue, checkout, admin management, and notification endpoints use MySQL.
+The Worker serves `/health` and the existing `/api/*` JSON endpoints at
+`http://127.0.0.1:8787`. Configure `CORS_ORIGINS` as a comma-separated list of
+exact frontend origins. Admin login uses the `ADMIN_EMAIL` and
+`ADMIN_PASSWORD` Worker variables.
+
+## Create and deploy D1
+
+1. Create a D1 database and copy its ID into `wrangler.jsonc`:
+
+   ```powershell
+   npx wrangler d1 create duanbackup
+   ```
+
+2. Set the production admin password as a Worker secret:
+
+   ```powershell
+   npx wrangler secret put ADMIN_PASSWORD
+   ```
+
+3. Set the production frontend origin in `wrangler.jsonc` under
+   `vars.CORS_ORIGINS`, apply the schema and deploy:
+
+   ```powershell
+   npm run db:apply:remote
+   npm run deploy
+   ```
+
+The checked-in D1 ID is only a local placeholder; replace it with the ID
+returned by `wrangler d1 create` before using remote commands. D1 migrations in
+`migrations/` create the tables used by the API. Do not run schema creation on
+every request.
+
+The fixture import is idempotent for existing IDs and reads
+`data/db.json`. Review its orders, customer details, and product keys before
+choosing to import it into a remote database with `npm run db:seed:remote`.
+
+The API preserves the existing public, admin, checkout, and notification
+routes. Set the frontend build variable `VITE_API_BASE_URL` to the Worker URL
+plus `/api`, for example `https://duanbackup-api.example.workers.dev/api`.

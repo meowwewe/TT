@@ -1,10 +1,31 @@
+const { readFileSync, existsSync } = require("node:fs");
+const path = require("node:path");
+
+function readDevVars() {
+  const file = path.resolve(__dirname, "..", ".dev.vars");
+  if (!existsSync(file)) return {};
+  return Object.fromEntries(
+    readFileSync(file, "utf8")
+      .split(/\r?\n/)
+      .filter((line) => line.trim() && !line.trim().startsWith("#"))
+      .map((line) => {
+        const separator = line.indexOf("=");
+        return separator < 0
+          ? [line.trim(), ""]
+          : [line.slice(0, separator).trim(), line.slice(separator + 1).trim()];
+      }),
+  );
+}
+
 (async () => {
   try {
-    const base = process.env.API_BASE_URL || 'http://localhost:3001';
+    const localVars = readDevVars();
+    const base = process.env.API_BASE_URL || 'http://127.0.0.1:8787';
     const credentials = {
-      email: process.env.ADMIN_EMAIL || 'admin@namnguyen.local',
-      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      email: process.env.ADMIN_EMAIL || localVars.ADMIN_EMAIL || 'admin@namnguyen.local',
+      password: process.env.ADMIN_PASSWORD || localVars.ADMIN_PASSWORD,
     };
+    if (!credentials.password) throw new Error('Set ADMIN_PASSWORD in .dev.vars or the process environment');
     const loginResp = await fetch(base + '/api/admin/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
