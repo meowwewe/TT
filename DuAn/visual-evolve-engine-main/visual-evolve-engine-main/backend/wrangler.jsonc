@@ -6,7 +6,7 @@
   "workers_dev": true,
   "vars": {
     "ADMIN_EMAIL": "admin@namnguyen.local",
-    "CORS_ORIGINS": "http://localhost:5173,http://127.0.0.1:5173"
+    "CORS_ORIGINS": "http://localhost:5173,https://tt-9no.pages.dev,https://tt-admin.pages.dev"
   },
   "d1_databases": [
     {
