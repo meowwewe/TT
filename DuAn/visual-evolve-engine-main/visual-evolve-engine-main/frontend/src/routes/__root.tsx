@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -118,6 +119,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (
+      window.location.hostname.includes("ttadmin-2dd") &&
+      window.location.pathname === "/"
+    ) {
+      void navigate({ to: "/admin" });
+    }
+  }, [navigate]);
 
   return (
     <QueryClientProvider client={queryClient}>
