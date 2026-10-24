@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, CreditCard, Truck, User } from "lucide-react";
+import { Check, CreditCard, QrCode, Truck, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Layout } from "@/components/layout";
@@ -39,7 +39,12 @@ function CheckoutPage() {
       toast.error("Vui lòng điền email và số điện thoại");
       return;
     }
-    const items = lines.map((l) => ({ productId: l.product.id, name: l.product.name, qty: l.qty, price: l.product.price }));
+    const items = lines.map((line) => ({
+      productId: line.product.id,
+      name: line.product.name,
+      qty: line.qty,
+      price: line.product.price,
+    }));
     try {
       const resp = await apiFetch("/orders", {
         method: "POST",
@@ -126,7 +131,24 @@ function CheckoutPage() {
               {step === 3 && (
                 <>
                   <h2 className="font-semibold text-lg mb-2">Thanh toán</h2>
-                  <p className="text-sm text-zinc-500">Không yêu cầu nhập thẻ — đơn sẽ được xử lý và giao key qua email.</p>
+                  <p className="text-sm text-zinc-500">
+                    Quét mã QR để thanh toán. Mã QR sẽ được cập nhật tại đây.
+                  </p>
+                  <div
+                    className="mx-auto flex aspect-square w-full max-w-64 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-6 text-center"
+                    aria-label="Khung mã QR thanh toán"
+                  >
+                    <QrCode className="size-16 text-zinc-400" strokeWidth={1.25} />
+                    <span className="text-sm font-medium text-zinc-500">
+                      Mã QR thanh toán
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      Hình QR sẽ hiển thị tại đây
+                    </span>
+                  </div>
+                  <p className="text-center text-sm text-zinc-500">
+                    Tổng thanh toán: <span className="font-semibold text-zinc-900">{money(total)}</span>
+                  </p>
                 </>
               )}
 
