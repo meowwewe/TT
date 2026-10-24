@@ -13,7 +13,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const steps = [
-  { id: 1, label: "Liên hệ", icon: User },
+  { id: 1, label: "Thông tin", icon: User },
   { id: 2, label: "Nhận key", icon: Truck },
   { id: 3, label: "Thanh toán", icon: CreditCard },
 ];
@@ -105,19 +105,22 @@ function CheckoutPage() {
             <div className="bg-white rounded-2xl ring-1 ring-black/5 p-6 lg:p-8 space-y-4">
               {step === 1 && (
                 <>
-                  <h2 className="font-semibold text-lg mb-2">Thông tin liên hệ</h2>
+                  <h2 className="font-semibold text-lg mb-2">Thông tin khách hàng</h2>
                   <Field label="Email nhận key" type="email" placeholder="ban@vidu.com" value={email} onChange={(v) => setEmail(v)} />
                   <Field label="Số điện thoại" type="tel" placeholder="0912 345 678" value={phone} onChange={(v) => setPhone(v)} />
-                </>
-              )}
-              {step === 2 && (
-                <>
-                  <h2 className="font-semibold text-lg mb-2">Thông tin xuất hóa đơn (không bắt buộc)</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <Field label="Họ" value={firstName} onChange={(v) => setFirstName(v)} />
                     <Field label="Tên" value={lastName} onChange={(v) => setLastName(v)} />
                   </div>
-                  <Field label="Địa chỉ" value={address} onChange={(v) => setAddress(v)} />
+                  <Field label="Địa chỉ xuất hóa đơn (không bắt buộc)" value={address} onChange={(v) => setAddress(v)} />
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <h2 className="font-semibold text-lg mb-2">Nhận key</h2>
+                  <p className="text-sm text-zinc-500">
+                    Key bản quyền sẽ được gửi tới địa chỉ email bạn đã nhập. Giao key qua email miễn phí.
+                  </p>
                 </>
               )}
               {step === 3 && (
