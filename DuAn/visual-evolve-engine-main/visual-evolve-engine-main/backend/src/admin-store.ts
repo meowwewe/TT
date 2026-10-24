@@ -30,6 +30,7 @@ type KeyData = {
   productId: string;
   key: string;
   status: "available" | "used";
+  assignedOrderId?: string;
 };
 type BannerData = {
   id: string;
@@ -52,7 +53,8 @@ type OrderData = {
   deliveryMethod: string;
   couponCode?: string;
   total: number;
-  status: "pending" | "paid" | "approved" | "cancelled";
+  status: "pending" | "paid" | "approved" | "completed" | "cancelled";
+  deliveryEmailStatus: "pending" | "sent" | "logged";
   createdAt: string;
   items: OrderItem[];
 };
@@ -105,6 +107,7 @@ type KeyRow = {
   product_id: string;
   license_key: string;
   status: KeyData["status"];
+  assigned_order_id: string | null;
 };
 
 type BannerRow = {
@@ -124,6 +127,7 @@ type OrderRow = {
   coupon_code: string | null;
   total: number;
   status: OrderData["status"];
+  delivery_email_status: OrderData["deliveryEmailStatus"];
   created_at: string;
 };
 
@@ -173,10 +177,10 @@ export async function getStore(db: D1Database): Promise<StoreData> {
       "SELECT id, slug, name, brand, category_slug, price, compare_at, rating, reviews, image, badge, stock, description, platforms, specs FROM products",
     ),
     db.prepare("SELECT id, code, discount_percent, active FROM coupons"),
-    db.prepare("SELECT id, product_id, license_key, status FROM product_keys"),
+    db.prepare("SELECT id, product_id, license_key, status, assigned_order_id FROM product_keys"),
     db.prepare("SELECT id, title, image, type, active FROM banners"),
     db.prepare(
-      "SELECT id, email, phone, note, delivery_method, coupon_code, total, status, created_at FROM orders",
+      "SELECT id, email, phone, note, delivery_method, coupon_code, total, status, delivery_email_status, created_at FROM orders",
     ),
     db.prepare(
       "SELECT order_id, product_id, name, quantity, unit_price FROM order_items",
@@ -237,6 +241,7 @@ export async function getStore(db: D1Database): Promise<StoreData> {
       productId: row.product_id,
       key: row.license_key,
       status: row.status,
+      ...(row.assigned_order_id ? { assignedOrderId: row.assigned_order_id } : {}),
     })),
     banners: banners.map((row) => ({
       id: row.id,
@@ -254,6 +259,7 @@ export async function getStore(db: D1Database): Promise<StoreData> {
       ...(row.coupon_code ? { couponCode: row.coupon_code } : {}),
       total: row.total,
       status: row.status,
+      deliveryEmailStatus: row.delivery_email_status,
       createdAt: toIsoString(row.created_at),
       items: itemsByOrder.get(row.id) ?? [],
     })),
@@ -328,9 +334,9 @@ export async function writeStore(db: D1Database, data: StoreData): Promise<void>
     statements.push(
       db
         .prepare(
-          "INSERT INTO product_keys (id, product_id, license_key, status) VALUES (?, ?, ?, ?)",
+          "INSERT INTO product_keys (id, product_id, license_key, status, assigned_order_id) VALUES (?, ?, ?, ?, ?)",
         )
-        .bind(row.id, row.productId, row.key, row.status),
+        .bind(row.id, row.productId, row.key, row.status, row.assignedOrderId ?? null),
     );
   }
 
@@ -348,7 +354,7 @@ export async function writeStore(db: D1Database, data: StoreData): Promise<void>
     statements.push(
       db
         .prepare(
-          "INSERT INTO orders (id, email, phone, note, delivery_method, coupon_code, total, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO orders (id, email, phone, note, delivery_method, coupon_code, total, status, delivery_email_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(
           row.id,
@@ -359,6 +365,7 @@ export async function writeStore(db: D1Database, data: StoreData): Promise<void>
           row.couponCode ?? null,
           row.total,
           row.status,
+          row.deliveryEmailStatus,
           toIsoString(row.createdAt),
         ),
     );

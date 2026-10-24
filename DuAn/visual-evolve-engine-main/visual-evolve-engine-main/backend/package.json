@@ -14,6 +14,7 @@
     "db:apply:remote": "wrangler d1 migrations apply duanbackup-db --remote --config ./wrangler.jsonc",
     "db:seed:local": "node scripts/import-json-to-d1.cjs --local",
     "db:seed:remote": "node scripts/import-json-to-d1.cjs --remote",
+    "keys:generate": "node generate-keys.cjs",
     "check": "node scripts/admin-check.cjs",
     "typecheck": "tsc --noEmit"
   },

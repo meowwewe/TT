@@ -35,7 +35,8 @@ type OrderData = {
   deliveryMethod: string;
   couponCode?: string;
   total: number;
-  status: string;
+  status: "pending" | "paid" | "approved" | "completed" | "cancelled";
+  deliveryEmailStatus: "pending" | "sent" | "logged";
   createdAt: string;
   items: OrderItem[];
 };
@@ -99,7 +100,7 @@ function AdminDashboard() {
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     return orders
-      .filter((order) => order.status === "approved" && new Date(order.createdAt) >= startOfDay)
+      .filter((order) => ["approved", "completed"].includes(order.status) && new Date(order.createdAt) >= startOfDay)
       .reduce((sum, order) => sum + (order.total || 0), 0);
   }, [orders]);
 
@@ -125,6 +126,8 @@ function AdminDashboard() {
         return "Đã thanh toán";
       case "approved":
         return "Đã duyệt";
+      case "completed":
+        return "Đã phát key";
       case "cancelled":
         return "Đã hủy";
       default:
@@ -249,6 +252,33 @@ function AdminDashboard() {
     loadStats();
   };
 
+  const confirmOrder = async (id: string) => {
+    setError("");
+    const response = await apiFetch(`/admin/orders/${encodeURIComponent(id)}/confirm`, {
+      method: "POST",
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setError(result.error || "Không thể xác nhận đơn hàng.");
+      return;
+    }
+    const order = result as OrderData & {
+      emailSent: boolean;
+      emailLogged: boolean;
+      emailError?: string;
+    };
+    setOrders((current) => current.map((item) => (item.id === order.id ? order : item)));
+    setSelectedOrder(order);
+    await Promise.all([loadKeys(), loadStats()]);
+    if (order.emailError) {
+      setError(order.emailError);
+    } else if (order.emailLogged) {
+      setError("Đơn đã hoàn tất. Chưa cấu hình Resend; thông tin email và key đã được ghi log ở Worker.");
+    } else {
+      setError("");
+    }
+  };
+
   const handleLogout = async () => {
     await apiFetch("/admin/logout", { method: "POST" });
     navigate({ to: "/admin/login" });
@@ -316,6 +346,12 @@ function AdminDashboard() {
           ))}
         </div>
 
+        {error && (
+          <p className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {error}
+          </p>
+        )}
+
         {active === "dashboard" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {[
@@ -378,13 +414,13 @@ function AdminDashboard() {
                             <span>{new Intl.NumberFormat("vi-VN").format(selectedOrder.total)}₫</span>
                           </div>
                           <div className="mt-3 flex gap-2">
-                            {selectedOrder.status !== 'approved' && selectedOrder.status !== 'cancelled' ? (
+                            {selectedOrder.status !== 'completed' && selectedOrder.status !== 'cancelled' ? (
                               <>
-                                <button onClick={() => updateOrderStatus(selectedOrder.id, "approved")} className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Duyệt</button>
+                                <button onClick={() => confirmOrder(selectedOrder.id)} className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Xác nhận, phát key</button>
                                 <button onClick={() => updateOrderStatus(selectedOrder.id, "cancelled")} className="rounded-full border border-red-300 px-3 py-1 text-xs text-red-600">Hủy</button>
                               </>
                             ) : (
-                              <span className="px-3 py-1 rounded-full text-sm font-semibold text-zinc-700">Trạng thái: {selectedOrder.status === 'approved' ? 'Đã duyệt' : 'Đã hủy'}</span>
+                              <span className="px-3 py-1 rounded-full text-sm font-semibold text-zinc-700">Trạng thái: {getStatusLabel(selectedOrder.status)}</span>
                             )}
                           </div>
                         </div>
@@ -421,7 +457,7 @@ function AdminDashboard() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Cần duyệt</h3>
               <div className="space-y-4">
-                {orders.filter(o => o.status !== 'approved' && o.status !== 'cancelled').map((order) => (
+                {orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').map((order) => (
                   <div key={order.id} className="rounded-3xl border border-zinc-200 bg-white p-5">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                       <div>
@@ -430,7 +466,7 @@ function AdminDashboard() {
                       </div>
                       <div className="inline-flex items-center gap-2 text-sm">
                         <span className="rounded-full border px-3 py-1 text-zinc-600">{getStatusLabel(order.status)}</span>
-                        <button onClick={() => updateOrderStatus(order.id, "approved")} className="rounded-full bg-brand px-3 py-1 text-white text-xs">Duyệt thanh toán</button>
+                        <button onClick={() => confirmOrder(order.id)} className="rounded-full bg-brand px-3 py-1 text-white text-xs">Xác nhận, phát key</button>
                       </div>
                     </div>
                     <div className="grid gap-2 text-sm text-zinc-600">
@@ -438,6 +474,19 @@ function AdminDashboard() {
                       <p>Phương thức: {order.deliveryMethod}</p>
                       <p>Ghi chú: {order.note || "Không có"}</p>
                         <p>Tổng: {new Intl.NumberFormat("vi-VN").format(order.total)}₫</p>
+                        {order.status === "completed" && (
+                          <>
+                            <p>Email key: {order.deliveryEmailStatus === "sent" ? "Đã gửi" : order.deliveryEmailStatus === "logged" ? "Đã ghi log (chưa gửi email)" : "Chưa gửi"}</p>
+                            {order.deliveryEmailStatus !== "sent" && (
+                              <button
+                                onClick={() => confirmOrder(order.id)}
+                                className="mt-2 w-fit rounded-full border border-brand px-3 py-1 text-xs text-brand"
+                              >
+                                Thử gửi email key
+                              </button>
+                            )}
+                          </>
+                        )}
                     </div>
                   </div>
                 ))}
@@ -447,7 +496,7 @@ function AdminDashboard() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Đã xử lý</h3>
                 <div className="space-y-4">
-                  {orders.filter(o => o.status === 'approved' || o.status === 'cancelled').map((order) => (
+                  {orders.filter(o => o.status === 'completed' || o.status === 'approved' || o.status === 'cancelled').map((order) => (
                   <div key={order.id} className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                       <div>
@@ -455,7 +504,7 @@ function AdminDashboard() {
                         <p className="text-lg font-semibold">{order.email}</p>
                       </div>
                       <div className="inline-flex items-center gap-2 text-sm">
-                        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${order.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${order.status === 'completed' || order.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {getStatusLabel(order.status)}
                         </span>
                       </div>
@@ -580,7 +629,7 @@ function AnalyticsView({ orders }: { orders: OrderData[] }) {
     startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay() + 1); // Monday
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    let filtered: OrderData[] = orders.filter((o) => o.status === 'approved');
+    let filtered: OrderData[] = orders.filter((o) => o.status === 'approved' || o.status === 'completed');
     if (period === 'day') {
       filtered = filtered.filter((o) => new Date(o.createdAt) >= startOfDay);
     } else if (period === 'week') {

@@ -65,6 +65,279 @@ function sendNotificationObj(notification: {
   }
 }
 
+type OrderForDelivery = {
+  id: string;
+  email: string;
+  phone: string;
+  note: string;
+  delivery_method: string;
+  coupon_code: string | null;
+  total: number;
+  status: "pending" | "paid" | "approved" | "completed" | "cancelled";
+  delivery_email_status: "pending" | "sent" | "logged";
+  created_at: string;
+};
+
+type OrderItemForDelivery = {
+  product_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+};
+
+type AssignedKey = { productName: string; key: string };
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+}
+
+async function sendOrderKeysEmail(
+  env: Env,
+  order: OrderForDelivery,
+  keys: AssignedKey[],
+): Promise<{ emailSent: boolean; emailLogged: boolean; emailError?: string }> {
+  if (order.delivery_email_status === "sent") {
+    return { emailSent: true, emailLogged: false };
+  }
+
+  const subject = `Mã license cho đơn hàng ${order.id}`;
+  const keyLines = keys.map(({ productName, key }) => `${productName}: ${key}`);
+
+  if (!env.RESEND_API_KEY) {
+    if (order.delivery_email_status !== "logged") {
+      console.info(
+        JSON.stringify({
+          event: "order_license_email_fallback",
+          to: order.email,
+          orderId: order.id,
+          subject,
+          licenseKeys: keyLines,
+        }),
+      );
+    }
+    return { emailSent: false, emailLogged: true };
+  }
+
+  if (!env.RESEND_FROM_EMAIL) {
+    console.error("RESEND_FROM_EMAIL is required when RESEND_API_KEY is configured");
+    return {
+      emailSent: false,
+      emailLogged: false,
+      emailError: "Email chưa được gửi: Worker thiếu cấu hình RESEND_FROM_EMAIL.",
+    };
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.RESEND_FROM_EMAIL,
+        to: [order.email],
+        subject,
+        text: [
+          `Cảm ơn bạn đã đặt hàng. Mã license cho đơn hàng ${order.id}:`,
+          "",
+          ...keyLines,
+        ].join("\n"),
+        html: `<p>Cảm ơn bạn đã đặt hàng. Mã license cho đơn hàng <strong>${escapeHtml(order.id)}</strong>:</p><ul>${keys
+          .map(
+            ({ productName, key }) =>
+              `<li><strong>${escapeHtml(productName)}:</strong> <code>${escapeHtml(key)}</code></li>`,
+          )
+          .join("")}</ul>`,
+      }),
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      console.error("Resend rejected order license email", response.status, details);
+      return {
+        emailSent: false,
+        emailLogged: false,
+        emailError: "Email chưa gửi được; có thể thử xác nhận lại để gửi lại.",
+      };
+    }
+
+    return { emailSent: true, emailLogged: false };
+  } catch (error) {
+    console.error("Failed to send order license email", error);
+    return {
+      emailSent: false,
+      emailLogged: false,
+      emailError: "Email chưa gửi được; có thể thử xác nhận lại để gửi lại.",
+    };
+  }
+}
+
+async function confirmOrder(orderId: string, env: Env): Promise<Response> {
+  const order = await env.DB.prepare(
+    "SELECT id, email, phone, note, delivery_method, coupon_code, total, status, delivery_email_status, created_at FROM orders WHERE id = ?",
+  )
+    .bind(orderId)
+    .first<OrderForDelivery>();
+  if (!order) return createError(404, "Không tìm thấy đơn hàng");
+  if (order.status === "cancelled") {
+    return createError(400, "Không thể xác nhận đơn hàng đã hủy");
+  }
+
+  const orderItems = await env.DB.prepare(
+    "SELECT product_id, name, quantity, unit_price FROM order_items WHERE order_id = ?",
+  )
+    .bind(orderId)
+    .all<OrderItemForDelivery>();
+  const items = orderItems.results ?? [];
+  if (items.length === 0) return createError(400, "Đơn hàng không có sản phẩm");
+
+  let assignedKeys: AssignedKey[];
+  if (order.status === "completed") {
+    const existingKeys = await env.DB.prepare(
+      "SELECT pk.license_key, COALESCE((SELECT oi.name FROM order_items oi WHERE oi.order_id = pk.assigned_order_id AND oi.product_id = pk.product_id LIMIT 1), 'Sản phẩm') AS name FROM product_keys pk WHERE pk.assigned_order_id = ? ORDER BY pk.rowid",
+    )
+      .bind(orderId)
+      .all<{ license_key: string; name: string }>();
+    assignedKeys = (existingKeys.results ?? []).map((row) => ({
+      productName: row.name,
+      key: row.license_key,
+    }));
+  } else {
+    if (!["pending", "paid", "approved"].includes(order.status)) {
+      return createError(400, "Trạng thái đơn hàng không hợp lệ để xác nhận");
+    }
+
+    const quantities = new Map<string, { productName: string; quantity: number }>();
+    for (const item of items) {
+      const current = quantities.get(item.product_id);
+      quantities.set(item.product_id, {
+        productName: item.name,
+        quantity: (current?.quantity ?? 0) + item.quantity,
+      });
+    }
+
+    assignedKeys = [];
+    const keyUpdates: D1PreparedStatement[] = [];
+    for (const [productId, item] of quantities) {
+      const available = await env.DB.prepare(
+        "SELECT id, license_key FROM product_keys WHERE product_id = ? AND status = 'available' ORDER BY rowid LIMIT ?",
+      )
+        .bind(productId, item.quantity)
+        .all<{ id: string; license_key: string }>();
+      const rows = available.results ?? [];
+      if (rows.length < item.quantity) {
+        return createError(
+          400,
+          `Kho key cho sản phẩm "${item.productName}" không đủ; còn ${rows.length}/${item.quantity} key cần giao.`,
+        );
+      }
+
+      for (const row of rows) {
+        assignedKeys.push({ productName: item.productName, key: row.license_key });
+        keyUpdates.push(
+          env.DB.prepare(
+            "UPDATE product_keys SET status = 'used', assigned_order_id = ? WHERE id = ? AND status = 'available' AND EXISTS (SELECT 1 FROM orders WHERE id = ? AND status IN ('pending', 'paid', 'approved'))",
+          ).bind(orderId, row.id, orderId),
+        );
+      }
+    }
+
+    const notification = {
+      id: createId("notify"),
+      message: `Đơn hàng ${orderId} đã hoàn tất, license key đã được gửi tới khách hàng.`,
+      type: "payment" as const,
+      orderId,
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+
+    try {
+      await env.DB.batch([
+        ...keyUpdates,
+        env.DB.prepare(
+          "UPDATE orders SET status = 'completed' WHERE id = ? AND status IN ('pending', 'paid', 'approved')",
+        ).bind(orderId),
+        env.DB.prepare(
+          "INSERT INTO notifications (id, message, type, order_id, created_at, is_read) SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM orders WHERE id = ? AND status = 'completed') AND NOT EXISTS (SELECT 1 FROM notifications WHERE order_id = ? AND message = ?)",
+        ).bind(
+          notification.id,
+          notification.message,
+          notification.type,
+          orderId,
+          notification.createdAt,
+          0,
+          orderId,
+          orderId,
+          notification.message,
+        ),
+      ]);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("INSUFFICIENT_LICENSE_KEYS")) {
+        return createError(400, "Kho key vừa thay đổi; không đủ key để hoàn tất đơn hàng.");
+      }
+      throw error;
+    }
+
+    const updatedOrder = await env.DB.prepare(
+      "SELECT status FROM orders WHERE id = ?",
+    )
+      .bind(orderId)
+      .first<{ status: string }>();
+    if (updatedOrder?.status !== "completed") {
+      return createError(400, "Đơn hàng đã thay đổi trạng thái; hãy tải lại và thử lại.");
+    }
+
+    sendNotificationObj(notification);
+  }
+
+  if (assignedKeys.length === 0) {
+    return createError(400, "Không tìm thấy license key đã gán cho đơn hàng");
+  }
+
+  const delivery = await sendOrderKeysEmail(env, order, assignedKeys);
+  if (delivery.emailSent || delivery.emailLogged) {
+    await env.DB.prepare("UPDATE orders SET delivery_email_status = ? WHERE id = ?")
+      .bind(delivery.emailSent ? "sent" : "logged", orderId)
+      .run();
+  }
+
+  return createResponse({
+    id: order.id,
+    email: order.email,
+    phone: order.phone,
+    note: order.note,
+    deliveryMethod: order.delivery_method,
+    ...(order.coupon_code ? { couponCode: order.coupon_code } : {}),
+    total: order.total,
+    status: "completed",
+    deliveryEmailStatus: delivery.emailSent
+      ? "sent"
+      : delivery.emailLogged
+        ? "logged"
+        : order.delivery_email_status,
+    createdAt: order.created_at,
+    items: items.map((item) => ({
+      productId: item.product_id,
+      name: item.name,
+      qty: item.quantity,
+      price: item.unit_price,
+    })),
+    emailSent: delivery.emailSent,
+    emailLogged: delivery.emailLogged,
+    ...(delivery.emailError ? { emailError: delivery.emailError } : {}),
+  });
+}
+
 export async function handleAdminApi(request: Request, env: Env) {
   const url = new URL(request.url);
   const { pathname } = url;
@@ -162,10 +435,18 @@ export async function handleAdminApi(request: Request, env: Env) {
     );
   }
 
+  const confirmMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/confirm$/);
+  if (confirmMatch && request.method === "POST") {
+    return confirmOrder(decodeURIComponent(confirmMatch[1]), env);
+  }
+
   if (pathname.startsWith("/api/admin/orders/") && request.method === "PATCH") {
     const id = pathname.split("/").pop();
     if (!id) return createError(400, "Invalid order id");
     const body = (await request.json()) as any;
+    if (body.status === "approved") {
+      return confirmOrder(decodeURIComponent(id), env);
+    }
     const store = await getStore(env.DB);
     const order = store.orders.find((item) => item.id === id);
     if (!order) return createError(404, "Order not found");
@@ -467,6 +748,7 @@ export async function handlePublicApi(request: Request, env: Env) {
       couponCode,
       total,
       status: "pending" as const,
+      deliveryEmailStatus: "pending" as const,
       createdAt: new Date().toISOString(),
       items,
     };

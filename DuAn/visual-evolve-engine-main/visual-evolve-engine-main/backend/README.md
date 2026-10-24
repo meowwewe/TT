@@ -20,6 +20,25 @@ The Worker serves `/health` and the existing `/api/*` JSON endpoints at
 exact frontend origins. Admin login uses the `ADMIN_EMAIL` and
 `ADMIN_PASSWORD` Worker variables.
 
+To generate 50 invalid `TEST-` placeholder keys per product from
+`data/db.json`, run `npm run keys:generate`. After applying the local schema,
+load them into local D1 with:
+
+```powershell
+npx wrangler d1 execute duanbackup-db --local --file=seed-keys.sql --config ./wrangler.jsonc
+```
+
+These are test placeholders, not usable licenses. Do not load them into
+production D1.
+
+Order fulfillment is handled by the authenticated
+`POST /api/admin/orders/:id/confirm` endpoint. It atomically claims the number
+of available keys required by each order item, completes the order, and sends
+the keys with Resend when `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set.
+Without a Resend key, the Worker logs the recipient and test/license keys and
+marks email delivery as logged, not sent. Configure these values as Worker
+secrets/variables before using real customer orders.
+
 ## Create and deploy D1
 
 1. Create a D1 database and copy its ID into `wrangler.jsonc`:
@@ -35,12 +54,15 @@ exact frontend origins. Admin login uses the `ADMIN_EMAIL` and
    ```
 
 3. Set the production frontend origin in `wrangler.jsonc` under
-   `vars.CORS_ORIGINS`, apply the schema and deploy:
+   `vars.CORS_ORIGINS`, apply migrations and deploy:
 
    ```powershell
    npm run db:apply:remote
    npm run deploy
    ```
+
+   For email delivery, configure `RESEND_API_KEY` as a Worker secret and
+   `RESEND_FROM_EMAIL` as a verified sender address before deployment.
 
 The checked-in D1 ID is only a local placeholder; replace it with the ID
 returned by `wrangler d1 create` before using remote commands. D1 migrations in

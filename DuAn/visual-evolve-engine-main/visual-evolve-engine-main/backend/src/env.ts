@@ -6,4 +6,6 @@ export interface Env {
   ADMIN_EMAIL?: string;
   ADMIN_PASSWORD?: string;
   CORS_ORIGINS?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
 }
