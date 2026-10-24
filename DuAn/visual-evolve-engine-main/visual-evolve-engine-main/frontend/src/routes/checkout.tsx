@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, CreditCard, QrCode, Truck, User } from "lucide-react";
+import { Check, CreditCard, QrCode, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Layout } from "@/components/layout";
@@ -14,8 +14,7 @@ export const Route = createFileRoute("/checkout")({
 
 const steps = [
   { id: 1, label: "Thông tin", icon: User },
-  { id: 2, label: "Nhận key", icon: Truck },
-  { id: 3, label: "Thanh toán", icon: CreditCard },
+  { id: 2, label: "Thanh toán", icon: CreditCard },
 ];
 
 function CheckoutPage() {
@@ -122,14 +121,6 @@ function CheckoutPage() {
               )}
               {step === 2 && (
                 <>
-                  <h2 className="font-semibold text-lg mb-2">Nhận key</h2>
-                  <p className="text-sm text-zinc-500">
-                    Key bản quyền sẽ được gửi tới địa chỉ email bạn đã nhập. Giao key qua email miễn phí.
-                  </p>
-                </>
-              )}
-              {step === 3 && (
-                <>
                   <h2 className="font-semibold text-lg mb-2">Thanh toán</h2>
                   <p className="text-sm text-zinc-500">
                     Quét mã QR để thanh toán. Mã QR sẽ được cập nhật tại đây.
@@ -149,12 +140,15 @@ function CheckoutPage() {
                   <p className="text-center text-sm text-zinc-500">
                     Tổng thanh toán: <span className="font-semibold text-zinc-900">{money(total)}</span>
                   </p>
+                  <p className="text-center text-sm font-medium text-brand">
+                    Thanh toán thành công và ấn đặt hàng
+                  </p>
                 </>
               )}
 
               <div className="flex justify-between pt-4">
                 <button onClick={() => setStep(Math.max(1, step - 1))} disabled={step === 1} className="px-5 py-2.5 text-sm font-semibold text-zinc-600 hover:text-brand disabled:opacity-40">Quay lại</button>
-                {step < 3 ? (
+                {step < 2 ? (
                   <button onClick={() => setStep(step + 1)} className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold px-6 py-2.5 rounded-lg">Tiếp tục</button>
                 ) : (
                   <button onClick={placeOrder} className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold px-6 py-2.5 rounded-lg">Đặt hàng</button>
