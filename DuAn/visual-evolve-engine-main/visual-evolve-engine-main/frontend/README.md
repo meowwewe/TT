@@ -10,7 +10,8 @@ Static React/TanStack Router storefront, ready for Cloudflare Pages.
 
 The Vite development server proxies `/api` requests to the backend. For Pages,
 set `VITE_API_BASE_URL` to the deployed API's base URL, such as
-`https://api.example.com/api`, before building.
+`https://api.example.com/api`, before building. If unset, the frontend uses
+`https://duanbackup-api.havandungismeo.workers.dev/api`.
 
 Build with `npm run build`; Cloudflare Pages serves the generated `dist/`
 directory. Pages' SPA fallback handles direct visits to application routes.

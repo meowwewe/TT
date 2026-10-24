@@ -51,8 +51,10 @@ than committing a populated `.dev.vars` file.
 Set the Pages project root directory to `frontend`, the build command to
 `npm run build`, and the output directory to `dist`. Configure
 `VITE_API_BASE_URL=https://<your-api-host>/api` as a Pages build environment
-variable. For reliable admin-cookie authentication, use a custom frontend
-domain and an API hostname under the same site (for example,
+variable. If it is not set, the frontend defaults to
+`https://duanbackup-api.havandungismeo.workers.dev/api`. For reliable
+admin-cookie authentication, use a custom frontend domain and an API hostname
+under the same site (for example,
 `shop.example.com` and `api.example.com`); browsers may block session cookies
 between unrelated third-party domains.
 
