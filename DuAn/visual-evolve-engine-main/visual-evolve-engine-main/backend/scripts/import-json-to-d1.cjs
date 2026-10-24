@@ -118,7 +118,7 @@ try {
       wrangler,
       "d1",
       "execute",
-      "duanbackup",
+      "duanbackup-db",
       mode[0],
       "--file",
       sqlFile,

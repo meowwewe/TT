@@ -11,7 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "duanbackup",
+      "database_name": "duanbackup-db",
       "database_id": "4b300047-4186-4d29-b0c1-14724a42fde4",
       "migrations_dir": "migrations"
     }
